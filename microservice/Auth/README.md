@@ -1,95 +1,109 @@
-# Layout structure
-```bash
+# Authentication Service
+
+This service handles user authentication, authorization, and user management for the ticket booking microservice architecture.
+
+## Service Overview
+
+The Authentication Service is responsible for:
+- User registration and login
+- Owner registration and login
+- Token generation and validation
+- User profile management
+- Authorization across microservices
+
+## Directory Structure
+
+```
 Auth/
-├── src/
-│   ├── controllers/
-│   │   └── authController.js       # Auth logic handlers
-│   │   └── userController.js       # User profile operations
-│   ├── routes/
-│   │   └── authRoutes.js           # Authentication endpoints
-│   │   └── userRoutes.js           # User profile endpoints
-│   ├── models/
-│   │   └── user.js                 # User model
-│   │   └── refreshToken.js         # Token storage model
-│   ├── services/
-│   │   └── authService.js          # Auth business logic
-│   │   └── emailService.js         # Email notifications
-│   │   └── tokenService.js         # JWT handling
-│   ├── middlewares/
-│   │   └── authenticate.js         # Auth verification middleware
-│   │   └── validate.js             # Request validation
-│   │   └── rateLimiter.js          # Prevent brute force attacks
-│   ├── config/
-│   │   └── database.js             # Database connection & models setup
-│   │   └── passport.js             # OAuth strategies
-│   │   └── environment.js          # Environment configs
-│   ├── utils/
-│   │   └── logger.js               # Logging utility
-│   │   └── errorHandler.js         # Centralized error handling
-│   │   └── passwordUtils.js        # Password hashing/validation
-│   ├── app.js                      # Express application setup
-│   └── index.js                    # Server entry point
-├── .env.example                    # Environment variable template
-├── .env                            # Environment variables (gitignored)
-├── package.json                    # Dependencies and scripts
-├── Dockerfile                      # For containerization maybe not ??
-└── README.md                       # Documentation
-```
-# Package required 
-```js
-"dependencies": {
-    "bcryptjs": "^2.4.3",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "express-rate-limit": "^7.1.5",
-    "express-validator": "^7.0.1",
-    "helmet": "^7.1.0",
-    "jsonwebtoken": "^9.0.2",
-    "mysql2": "^3.6.5",
-    "nodemailer": "^6.9.7",
-    "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0",
-    "sequelize": "^6.35.2",
-    "winston": "^3.11.0"
-  },
-  "devDependencies": {
-    "jest": "^29.7.0",
-    "nodemon": "^3.0.2",
-    "supertest": "^6.3.3"
-  }
+├── index.js                 # Entry point for the Auth service
+├── package.json             # Dependencies and scripts
+├── README.md                # This documentation file
+└── src/
+    ├── config/
+    │   └── db.js            # Database configuration
+    ├── controllers/
+    │   ├── authControllers.js    # Authentication logic (login, refresh token, logout)
+    │   ├── ownerControllers.js   # Event owner management 
+    │   └── userController.js     # User account management
+    ├── middleware/
+    │   ├── authMiddleware.js     # Token verification middleware
+    │   └── validationMiddleware.js # Request validation middleware
+    ├── models/
+    │   ├── ownerModels.js        # Database models for event owners
+    │   └── userModels.js         # Database models for users
+    ├── routes/
+    │   ├── authRoutes.js         # Authentication endpoints
+    │   ├── ownerRoutes.js        # Owner management endpoints
+    │   └── userRoutes.js         # User management endpoints
+    └── utils/
+        ├── jwtUtils.js           # JWT token generation and verification
+        └── passwordUtils.js      # Password hashing and validation
 ```
 
-npm i bcryptjs cookie-parser cors dotenv express express-rate-limit express-validator helmet jsonwebtoken mysql2 nodemailer passport passport-google-oauth20 sequelize winston nodemon supertest
+## Key Files and Their Purpose
 
+### Entry Point
+- **index.js**: Configures Express server, middleware, and routes for the Auth service.
 
-## logger.js
-usage 
-In your authentication service, this logger helps track:
+### Configuration
+- **src/config/db.js**: Sets up database connection and handles database errors.
 
-Security Events:
-```js
-logger.info('User login attempt', { userId, ip });
-logger.error('Authentication failed', { reason, attempts });
-```
+### Controllers
+- **src/controllers/authControllers.js**: Handles login, token refresh, logout, and token verification.
+- **src/controllers/userController.js**: Manages user creation, profile updates, deletion.
+- **src/controllers/ownerControllers.js**: Handles event owner accounts and privileges.
 
-Debugging:
-```js
-logger.debug('Token validation', { token: '***' });
-```
+### Middleware
+- **src/middleware/authMiddleware.js**: Verifies JWT tokens and attaches user info to requests.
+- **src/middleware/validationMiddleware.js**: Validates request data before processing.
 
-Error Tracking:
-```js
-try {
-  // auth logic
-} catch (error) {
-  logger.error('Authentication error:', error);
-}
-```
+### Models
+- **src/models/userModels.js**: Defines user schema and authentication methods.
+- **src/models/ownerModels.js**: Defines event owner schema and privileges.
 
-Example Log Output:
-```bash
-2024-03-08T10:15:23.123Z INFO: User registered successfully {userId: "123"}
-2024-03-08T10:15:24.456Z ERROR: Invalid token format {token: "***"}
-```
+### Routes
+- **src/routes/authRoutes.js**: Endpoints for login, refresh token, logout, registration.
+- **src/routes/userRoutes.js**: User profile management endpoints.
+- **src/routes/ownerRoutes.js**: Owner account management endpoints.
+
+### Utilities
+- **src/utils/jwtUtils.js**: Functions for generating and verifying JWT tokens.
+- **src/utils/passwordUtils.js**: Functions for hashing and verifying passwords.
+
+## API Endpoints
+
+### Authentication
+- `POST /api/auth/register` - Register a new user
+- `POST /api/auth/login` - Login for users and owners
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/logout` - Logout
+- `GET /api/auth/verify` - Verify token validity
+
+### Users
+- `GET /api/users/profile` - Get user profile
+- `PUT /api/users/profile` - Update user profile
+- `DELETE /api/users/:id` - Delete user account
+
+### Owners
+- `POST /api/owners/register` - Register as an event owner
+- `GET /api/owners/profile` - Get owner profile
+- `PUT /api/owners/profile` - Update owner profile
+
+## Integration with Other Services
+
+The Auth Service is a critical component that integrates with all other microservices:
+
+1. **API Gateway**: Routes authentication requests and verifies tokens.
+2. **Event Service**: Verifies owner permissions for event management.
+3. **Ticket Service**: Validates user authentication for ticket purchases.
+4. **Cart Service**: Ensures users are authenticated before managing cart.
+5. **Order Service**: Verifies user identity for order processing.
+6. **Payment Service**: Ensures secure user authentication before payments.
+
+## Authentication Flow
+
+1. Users register or login through the Auth Service.
+2. Upon successful authentication, the service issues JWT access and refresh tokens.
+3. The access token is included in requests to other services.
+4. Other services verify the token through their own authMiddleware implementations.
+5. When the access token expires, clients use the refresh token to obtain a new access token.

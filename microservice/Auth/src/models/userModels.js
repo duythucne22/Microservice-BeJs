@@ -137,6 +137,26 @@ class User {
     const { passWord, ...userWithoutPassword } = user;
     return { ...userWithoutPassword, role: 'customer' };
   }
+  
+  static async validateCredentialsByEmail(email, password) {
+    // Get user with password
+    const user = await this.findByEmail(email);
+    
+    if (!user) {
+      return null;
+    }
+    
+    // Verify password
+    const isPasswordValid = await comparePassword(password, user.passWord);
+    
+    if (!isPasswordValid) {
+      return null;
+    }
+    
+    // Return user without password
+    const { passWord, ...userWithoutPassword } = user;
+    return { ...userWithoutPassword, role: 'customer' };
+  }
 }
 
 module.exports = User;

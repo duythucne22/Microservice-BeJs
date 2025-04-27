@@ -134,6 +134,26 @@ class Owner {
     const { passWord, ...ownerWithoutPassword } = owner;
     return { ...ownerWithoutPassword, role: 'owner' };
   }
+  
+  static async validateCredentialsByEmail(email, password) {
+    // Get owner with password
+    const owner = await this.findByEmail(email);
+    
+    if (!owner) {
+      return null;
+    }
+    
+    // Verify password
+    const isPasswordValid = await comparePassword(password, owner.passWord);
+    
+    if (!isPasswordValid) {
+      return null;
+    }
+    
+    // Return owner without password
+    const { passWord, ...ownerWithoutPassword } = owner;
+    return { ...ownerWithoutPassword, role: 'owner' };
+  }
 }
 
 module.exports = Owner;

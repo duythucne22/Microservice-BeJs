@@ -18,10 +18,19 @@ const ownerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-  userName: Joi.string().required(),
+  userName: Joi.string().when('email', {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required()
+  }),
+  email: Joi.string().email().when('userName', {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required()
+  }),
   passWord: Joi.string().required(),
   role: Joi.string().valid('customer', 'owner').default('customer')
-});
+}).or('userName', 'email');
 
 exports.validateUserRegistration = (req, res, next) => {
   const { error } = userSchema.validate(req.body);

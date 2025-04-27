@@ -7,20 +7,28 @@ const refreshTokens = new Set();
 
 exports.login = async (req, res) => {
   try {
-    const { userName, passWord, role } = req.body;
+    const { userName, email, passWord, role } = req.body;
     
     let user;
     
     if (role === 'owner') {
-      user = await Owner.validateCredentials(userName, passWord);
+      if (userName) {
+        user = await Owner.validateCredentials(userName, passWord);
+      } else if (email) {
+        user = await Owner.validateCredentialsByEmail(email, passWord);
+      }
     } else {
-      user = await User.validateCredentials(userName, passWord);
+      if (userName) {
+        user = await User.validateCredentials(userName, passWord);
+      } else if (email) {
+        user = await User.validateCredentialsByEmail(email, passWord);
+      }
     }
     
     if (!user) {
       return res.status(401).json({ 
         success: false, 
-        message: 'Invalid username or password' 
+        message: 'Invalid credentials' 
       });
     }
     
